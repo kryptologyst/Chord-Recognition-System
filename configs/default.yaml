@@ -1,0 +1,142 @@
+# Configuration for Chord Recognition System
+
+# Data configuration
+data:
+  sample_rate: 22050
+  hop_length: 512
+  n_fft: 2048
+  n_mels: 128
+  n_chroma: 12
+  segment_length: 3.0  # seconds
+  overlap: 0.5  # overlap ratio between segments
+  
+# Feature extraction
+features:
+  chroma:
+    method: "stft"  # stft, cqt, cqt_harmonic
+    bins_per_octave: 12
+    fmin: 65.41  # C2
+    fmax: 2093.00  # C7
+    threshold: 0.0
+    norm: 2.0
+    win_len_smooth: 41
+    smoothing_window: "hann"
+  
+  mfcc:
+    n_mfcc: 13
+    dct_type: 2
+    norm: "ortho"
+    lifter: 0
+    
+  spectral:
+    spectral_centroid: true
+    spectral_rolloff: true
+    spectral_bandwidth: true
+    zero_crossing_rate: true
+
+# Model configuration
+model:
+  type: "crnn"  # crnn, transformer, svm, random_forest
+  input_size: 12  # chroma features
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.3
+  bidirectional: true
+  
+  # Transformer specific
+  transformer:
+    d_model: 128
+    nhead: 8
+    num_encoder_layers: 6
+    num_decoder_layers: 6
+    dim_feedforward: 512
+    dropout: 0.1
+    activation: "relu"
+    
+  # CRNN specific
+  crnn:
+    cnn_layers: 3
+    cnn_channels: [32, 64, 128]
+    kernel_sizes: [3, 3, 3]
+    pool_sizes: [2, 2, 2]
+    rnn_type: "lstm"  # lstm, gru
+    rnn_layers: 2
+
+# Training configuration
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  num_epochs: 100
+  early_stopping_patience: 10
+  weight_decay: 1e-4
+  gradient_clip_norm: 1.0
+  
+  # Optimizer
+  optimizer: "adamw"  # adam, adamw, sgd
+  scheduler: "cosine"  # cosine, step, plateau
+  
+  # Data augmentation
+  augmentation:
+    enabled: true
+    pitch_shift: 2  # semitones
+    time_stretch: 0.1  # factor
+    noise_level: 0.01
+    reverb_prob: 0.3
+
+# Evaluation configuration
+evaluation:
+  metrics:
+    - "accuracy"
+    - "f1_macro"
+    - "f1_micro"
+    - "precision_macro"
+    - "recall_macro"
+    - "wcsr"  # Weighted Chord Symbol Recall
+    - "csr"   # Chord Symbol Recall
+  
+  # Chord vocabulary
+  chord_vocab:
+    - "C"
+    - "C#"
+    - "D"
+    - "D#"
+    - "E"
+    - "F"
+    - "F#"
+    - "G"
+    - "G#"
+    - "A"
+    - "A#"
+    - "B"
+    - "Cm"
+    - "C#m"
+    - "Dm"
+    - "D#m"
+    - "Em"
+    - "Fm"
+    - "F#m"
+    - "Gm"
+    - "G#m"
+    - "Am"
+    - "A#m"
+    - "Bm"
+    - "N"  # No chord
+
+# Logging and monitoring
+logging:
+  level: "INFO"
+  log_dir: "logs"
+  tensorboard: true
+  wandb:
+    enabled: false
+    project: "chord-recognition"
+    entity: "ai-projects"
+
+# Device configuration
+device:
+  auto: true  # Automatically detect CUDA/MPS/CPU
+  fallback_order: ["cuda", "mps", "cpu"]
+  
+# Reproducibility
+seed: 42
+deterministic: true
